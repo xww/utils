@@ -1,42 +1,51 @@
 import os  
 
 def add_log(filepath):
-    import sys
-    try:
-        LOG.info(_LI("aa"*100+"   " + sys._getframe().f_code.co_name))
-    except Exception:
-        pass
     print filepath
     file = open(filepath)
     filelines=file.readlines()
     newfilelines = []
-    for i in range(len(filelines)):
+    linecache = []
+    end_flag = "):"
+    i = 0
+    while i < len(filelines):
         newfilelines.append(filelines[i])
         temp = filelines[i][:-1].strip()                
-        if temp.startswith("def") and temp.endswith(":"):
+        if temp.startswith("def ") and temp.endswith(":"):
             prefix_len = len(filelines[i][:-1].rstrip())-len(filelines[i][:-1].strip())
-            str = 'LOG.info(_LI("aa"*100+"   " + sys._getframe().f_code.co_name))\n'
+            str = 'LOG.info(_LI("*"*10+"   " + sys._getframe().f_code.co_name))\n'
             newfilelines.append(" " * (prefix_len + 4) + "import sys\n")
             newfilelines.append(" " * (prefix_len + 4) + "try:\n")
             newfilelines.append(" " * (prefix_len + 8) + str)
             newfilelines.append(" " * (prefix_len + 4) + "except Exception:\n")
             newfilelines.append(" " * (prefix_len + 8) + "pass\n")
+        elif temp.startswith("def ") and temp.endswith(","):
+            linecache.append(filelines[i])            
+        elif temp.endswith(end_flag):
+            if len(linecache) > 0:
+                prefix_len = len(linecache[0][:-1].rstrip()) - len(linecache[0][:-1].strip())
+                str = 'LOG.info(_LI("*"*10+"   " + sys._getframe().f_code.co_name))\n'
+                newfilelines.append(" " * (prefix_len + 4) + "import sys\n")
+                newfilelines.append(" " * (prefix_len + 4) + "try:\n")
+                newfilelines.append(" " * (prefix_len + 8) + str)
+                newfilelines.append(" " * (prefix_len + 4) + "except Exception:\n")
+                newfilelines.append(" " * (prefix_len + 8) + "pass\n")
+                linecache = []
+        i=i+1
+
+        
+            
     file = open(filepath,"w")
     for i in range(len(newfilelines)):
         file.write(newfilelines[i])
   
-def dirlist(path, allfile):  
-    import sys
-    try:
-        LOG.info(_LI("aa"*100+"   " + sys._getframe().f_code.co_name))
-    except Exception:
-        pass
+def dirlist(path):  
     filelist =  os.listdir(path)  
     for filename in filelist:  
         filepath = os.path.join(path, filename)  
         if os.path.isdir(filepath):  
-            dirlist(filepath, allfile)          
+            dirlist(filepath)          
         elif os.path.splitext(filepath)[1] == '.py':
-            add_log(filepath)
-            allfile.append(filepath)
-    return allfile
+            add_log(filepath)       
+
+print dirlist("/usr/lib/python2.7/site-packages/neutron")
