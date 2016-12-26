@@ -1,0 +1,42 @@
+import os  
+
+def add_log(filepath):
+    import sys
+    try:
+        LOG.info(_LI("aa"*100+"   " + sys._getframe().f_code.co_name))
+    except Exception:
+        pass
+    print filepath
+    file = open(filepath)
+    filelines=file.readlines()
+    newfilelines = []
+    for i in range(len(filelines)):
+        newfilelines.append(filelines[i])
+        temp = filelines[i][:-1].strip()                
+        if temp.startswith("def") and temp.endswith(":"):
+            prefix_len = len(filelines[i][:-1].rstrip())-len(filelines[i][:-1].strip())
+            str = 'LOG.info(_LI("aa"*100+"   " + sys._getframe().f_code.co_name))\n'
+            newfilelines.append(" " * (prefix_len + 4) + "import sys\n")
+            newfilelines.append(" " * (prefix_len + 4) + "try:\n")
+            newfilelines.append(" " * (prefix_len + 8) + str)
+            newfilelines.append(" " * (prefix_len + 4) + "except Exception:\n")
+            newfilelines.append(" " * (prefix_len + 8) + "pass\n")
+    file = open(filepath,"w")
+    for i in range(len(newfilelines)):
+        file.write(newfilelines[i])
+  
+def dirlist(path, allfile):  
+    import sys
+    try:
+        LOG.info(_LI("aa"*100+"   " + sys._getframe().f_code.co_name))
+    except Exception:
+        pass
+    filelist =  os.listdir(path)  
+    for filename in filelist:  
+        filepath = os.path.join(path, filename)  
+        if os.path.isdir(filepath):  
+            dirlist(filepath, allfile)          
+        elif os.path.splitext(filepath)[1] == '.py':
+            add_log(filepath)
+            allfile.append(filepath)
+    return allfile
